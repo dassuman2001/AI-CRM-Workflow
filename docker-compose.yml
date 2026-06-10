@@ -1,10 +1,34 @@
-version: "3.9"
-
 services:
+
+  mysql:
+
+    image: mysql:8.0
+
+    container_name: ai-crm-mysql
+
+    restart: always
+
+    environment:
+
+      MYSQL_ROOT_PASSWORD: root
+
+      MYSQL_DATABASE: ai_crm
+
+    ports:
+
+      - "3307:3306"
+
+    volumes:
+
+      - mysql_data:/var/lib/mysql
 
   backend:
 
     build: ./ai-crm-backend
+
+    container_name: ai-crm-backend
+
+    restart: always
 
     ports:
 
@@ -14,11 +38,17 @@ services:
 
       - ./ai-crm-backend/.env
 
-    restart: always
+    depends_on:
+
+      - mysql
 
   frontend:
 
     build: ./ai-crm-frontend
+
+    container_name: ai-crm-frontend
+
+    restart: always
 
     ports:
 
@@ -28,4 +58,6 @@ services:
 
       - backend
 
-    restart: always
+volumes:
+
+  mysql_data:

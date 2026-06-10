@@ -29,3 +29,5 @@ google-genai==1.29.0
 httpx==0.28.1
 
 orjson==3.11.2
+
+openai>=1.50.0
