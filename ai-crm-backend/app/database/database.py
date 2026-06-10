@@ -14,6 +14,7 @@ DATABASE_URL = (
     f"{settings.MYSQL_HOST}:"
     f"{settings.MYSQL_PORT}/"
     f"{settings.MYSQL_DB}"
+    "?ssl_verify_cert=false"
 )
 
 
