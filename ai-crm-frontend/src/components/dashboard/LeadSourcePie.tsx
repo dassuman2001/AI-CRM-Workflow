@@ -92,7 +92,7 @@ export default function LeadSourcePie({
 
           >
 
-            {data.map((entry, index) => (
+            {data.map((_, index) => (
 
               <Cell
 

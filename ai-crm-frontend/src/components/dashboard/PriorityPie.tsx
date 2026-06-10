@@ -88,7 +88,7 @@ export default function PriorityPie({
 
           >
 
-            {data.map((entry, index) => (
+            {data.map((_, index) => (
 
               <Cell
 
