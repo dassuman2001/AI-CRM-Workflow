@@ -1,0 +1,63 @@
+from sqlalchemy.orm import Session
+
+from app.models.task import Task
+
+
+class TaskRepository:
+
+    @staticmethod
+    def create(
+        db: Session,
+        task: Task,
+    ):
+
+        db.add(task)
+
+        db.commit()
+
+        db.refresh(task)
+
+        return task
+
+    @staticmethod
+    def get_all(db: Session):
+
+        return (
+            db.query(Task)
+            .order_by(Task.id.desc())
+            .all()
+        )
+
+    @staticmethod
+    def get_by_id(
+        db: Session,
+        task_id: int,
+    ):
+
+        return (
+            db.query(Task)
+            .filter(Task.id == task_id)
+            .first()
+        )
+
+    @staticmethod
+    def update(
+        db: Session,
+        task: Task,
+    ):
+
+        db.commit()
+
+        db.refresh(task)
+
+        return task
+
+    @staticmethod
+    def delete(
+        db: Session,
+        task: Task,
+    ):
+
+        db.delete(task)
+
+        db.commit()

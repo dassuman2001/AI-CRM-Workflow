@@ -1,0 +1,31 @@
+version: "3.9"
+
+services:
+
+  backend:
+
+    build: ./ai-crm-backend
+
+    ports:
+
+      - "8000:8000"
+
+    env_file:
+
+      - ./ai-crm-backend/.env
+
+    restart: always
+
+  frontend:
+
+    build: ./ai-crm-frontend
+
+    ports:
+
+      - "5173:5173"
+
+    depends_on:
+
+      - backend
+
+    restart: always
