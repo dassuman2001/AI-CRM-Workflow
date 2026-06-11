@@ -1,13 +1,21 @@
+import { useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 
 export default function Navbar() {
 
-  const {
+  const { logout } = useAuth();
 
-    logout,
+const navigate = useNavigate();
 
-  } = useAuth();
+const handleLogout = () => {
+  console.log("Logout clicked");
 
+  logout();
+
+  navigate("/", {
+    replace: true,
+  });
+};
   return (
 
     <header className="h-16 border-b flex items-center justify-between px-6">
@@ -19,16 +27,10 @@ export default function Navbar() {
       </h2>
 
       <button
-
-        onClick={logout}
-
-        className="border px-4 py-2 rounded"
-
-      >
-
-        Logout
-
-      </button>
+  onClick={handleLogout}
+  className="border px-4 py-2 rounded">
+  Logout
+</button>
 
     </header>
 
