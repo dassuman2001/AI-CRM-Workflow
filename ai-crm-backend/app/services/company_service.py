@@ -1,325 +1,126 @@
-from app.models.lead import Lead
-from app.models.task import Task
+from sqlalchemy.orm import Session
 
-from app.services.gemini_service import GeminiService
+from app.models.company import Company
+
+from app.repositories.company_repository import CompanyRepository
+
+from app.schemas.company_schema import (
+    CompanyCreate,
+    CompanyUpdate,
+)
 
 
-class CopilotService:
-
-    @staticmethod
-    def pipeline_summary(leads):
-
-        total = len(leads)
-
-        high = len(
-            [
-                lead
-                for lead in leads
-                if lead.priority == "HIGH"
-            ]
-        )
-
-        medium = len(
-            [
-                lead
-                for lead in leads
-                if lead.priority == "MEDIUM"
-            ]
-        )
-
-        low = len(
-            [
-                lead
-                for lead in leads
-                if lead.priority == "LOW"
-            ]
-        )
-
-        scores = [
-            lead.ai_score
-            for lead in leads
-            if lead.ai_score
-        ]
-
-        avg_score = 0
-
-        if scores:
-
-            avg_score = round(
-                sum(scores) / len(scores)
-            )
-
-        return f"""
-📊 Pipeline Summary
-
-Total Leads: {total}
-
-High Priority: {high}
-
-Medium Priority: {medium}
-
-Low Priority: {low}
-
-Average AI Score: {avg_score}
-"""
+class CompanyService:
 
     @staticmethod
-    def high_priority_leads(leads):
-
-        filtered = [
-            lead
-            for lead in leads
-            if lead.priority == "HIGH"
-        ]
-
-        if not filtered:
-
-            return "No high priority leads found."
-
-        response = "🔥 High Priority Leads\n\n"
-
-        for lead in filtered:
-
-            response += f"""
-• {lead.name}
-
-  Company: {lead.company}
-
-  AI Score: {lead.ai_score}
-
-"""
-
-        return response
-
-    @staticmethod
-    def best_lead(leads):
-
-        if not leads:
-
-            return "No leads available."
-
-        best = max(
-            leads,
-            key=lambda x: x.ai_score or 0
-        )
-
-        return f"""
-🏆 Best Lead To Contact
-
-Name: {best.name}
-
-Company: {best.company}
-
-AI Score: {best.ai_score}
-
-Priority: {best.priority}
-
-Recommended Action:
-
-{best.next_action}
-"""
-
-    @staticmethod
-    def pending_tasks(tasks):
-
-        pending = [
-            task
-            for task in tasks
-            if not task.completed
-        ]
-
-        if not pending:
-
-            return "✅ No pending tasks."
-
-        response = "📋 Pending Tasks\n\n"
-
-        for task in pending:
-
-            response += f"""
-• {task.title}
-"""
-
-        return response
-
-    @staticmethod
-    def local_fallback(
-        message,
-        leads,
-        tasks,
-    ):
-
-        msg = message.lower()
-
-        if (
-            "pipeline" in msg
-            or "summary" in msg
-        ):
-
-            return CopilotService.pipeline_summary(
-                leads
-            )
-
-        if (
-            "high priority" in msg
-            or "priority leads" in msg
-        ):
-
-            return CopilotService.high_priority_leads(
-                leads
-            )
-
-        if (
-            "contact first" in msg
-            or "best lead" in msg
-            or "which lead" in msg
-        ):
-
-            return CopilotService.best_lead(
-                leads
-            )
-
-        if (
-            "task" in msg
-            or "pending" in msg
-        ):
-
-            return CopilotService.pending_tasks(
-                tasks
-            )
-
-        return """
-I am currently unable to access advanced AI reasoning.
-
-However I can still help with:
-
-• Pipeline summaries
-• Lead prioritization
-• High priority leads
-• Pending tasks
-• CRM analytics
-
-Try asking a CRM-related question.
-"""
-
-    @staticmethod
-    def chat(
-
-        db,
-
-        message: str,
-
+    def create_company(
+        db: Session,
+        payload: CompanyCreate,
         user_id: int,
-
     ):
 
-        leads = (
-            db.query(Lead)
-            .filter(
-                Lead.assigned_user_id == user_id
-            )
-            .all()
+        company = Company(
+
+            name=payload.name,
+
+            industry=payload.industry,
+
+            website=payload.website,
+
+            email=payload.email,
+
+            phone=payload.phone,
+
+            address=payload.address,
+
+            description=payload.description,
+
+            user_id=user_id,
+
         )
 
-        tasks = (
-            db.query(Task)
-            .filter(
-                Task.user_id == user_id
-            )
-            .all()
+        return CompanyRepository.create(
+            db,
+            company,
         )
 
-        all_leads_context = ""
+    @staticmethod
+    def list_companies(
+        db: Session,
+        user_id: int,
+    ):
 
-        for lead in leads:
+        return CompanyRepository.get_all(
+            db,
+            user_id,
+        )
 
-            all_leads_context += f"""
-Lead Name: {lead.name}
-Company: {lead.company}
-Priority: {lead.priority}
-Status: {lead.status}
-AI Score: {lead.ai_score}
-Estimated Value: {lead.estimated_value}
-Next Action: {lead.next_action}
+    @staticmethod
+    def get_company(
+        db: Session,
+        company_id: int,
+        user_id: int,
+    ):
 
-"""
+        return CompanyRepository.get_by_id(
+            db,
+            company_id,
+            user_id,
+        )
 
-        all_tasks_context = ""
+    @staticmethod
+    def update_company(
+        db: Session,
+        company_id: int,
+        payload: CompanyUpdate,
+        user_id: int,
+    ):
 
-        for task in tasks:
+        company = CompanyRepository.get_by_id(
+            db,
+            company_id,
+            user_id,
+        )
 
-            all_tasks_context += f"""
-Task: {task.title}
-Completed: {task.completed}
-Description: {task.description}
+        if company is None:
 
-"""
+            return None
 
-        msg = message.lower()
+        for key, value in payload.model_dump(
+            exclude_unset=True
+        ).items():
 
-        lead_context = ""
-
-        task_context = ""
-
-        if (
-            "lead" in msg
-            or "pipeline" in msg
-            or "priority" in msg
-        ):
-
-            lead_context = all_leads_context
-
-        if (
-            "task" in msg
-            or "pending" in msg
-        ):
-
-            task_context = all_tasks_context
-
-        prompt = f"""
-You are AI CRM Copilot.
-
-You are an intelligent CRM assistant integrated into this CRM.
-
-Use ONLY the logged-in user's CRM data.
-
-CRM LEADS
-
-{lead_context}
-
-CRM TASKS
-
-{task_context}
-
-USER QUESTION
-
-{message}
-
-Answer professionally.
-"""
-
-        try:
-
-            return GeminiService.generate(
-                prompt
+            setattr(
+                company,
+                key,
+                value,
             )
 
-        except Exception as e:
+        return CompanyRepository.update(
+            db,
+            company,
+        )
 
-            import traceback
+    @staticmethod
+    def delete_company(
+        db: Session,
+        company_id: int,
+        user_id: int,
+    ):
 
-            print("\n========== COPILOT ERROR ==========")
-            print(str(e))
-            traceback.print_exc()
-            print("===================================\n")
+        company = CompanyRepository.get_by_id(
+            db,
+            company_id,
+            user_id,
+        )
 
-            return CopilotService.local_fallback(
+        if company is None:
 
-                message,
+            return False
 
-                leads,
+        CompanyRepository.delete(
+            db,
+            company,
+        )
 
-                tasks,
-
-            )
-
+        return True

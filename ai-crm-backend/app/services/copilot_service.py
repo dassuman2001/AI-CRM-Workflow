@@ -67,13 +67,9 @@ Average AI Score: {avg_score}
     def high_priority_leads(leads):
 
         filtered = [
-
             lead
-
             for lead in leads
-
             if lead.priority == "HIGH"
-
         ]
 
         if not filtered:
@@ -127,13 +123,9 @@ Recommended Action:
     def pending_tasks(tasks):
 
         pending = [
-
             task
-
             for task in tasks
-
             if not task.completed
-
         ]
 
         if not pending:
@@ -212,17 +204,30 @@ Try asking a CRM-related question.
 
     @staticmethod
     def chat(
+
         db,
+
         message: str,
+
+        user_id: int,
+
     ):
 
-        leads = db.query(
-            Lead
-        ).all()
+        leads = (
+            db.query(Lead)
+            .filter(
+                Lead.assigned_user_id == user_id
+            )
+            .all()
+        )
 
-        tasks = db.query(
-            Task
-        ).all()
+        tasks = (
+            db.query(Task)
+            .filter(
+                Task.user_id == user_id
+            )
+            .all()
+        )
 
         all_leads_context = ""
 
@@ -253,64 +258,44 @@ Description: {task.description}
         msg = message.lower()
 
         lead_context = ""
+
         task_context = ""
 
-        if "lead" in msg or "pipeline" in msg or "priority" in msg:
+        if (
+            "lead" in msg
+            or "pipeline" in msg
+            or "priority" in msg
+        ):
+
             lead_context = all_leads_context
 
-        if "task" in msg or "pending" in msg:
+        if (
+            "task" in msg
+            or "pending" in msg
+        ):
+
             task_context = all_tasks_context
 
         prompt = f"""
 You are AI CRM Copilot.
 
-You are an intelligent CRM assistant integrated into a business CRM system.
+You are an intelligent CRM assistant integrated into this CRM.
 
-Rules:
-
-1. Answer naturally and professionally.
-
-2. If the question is about CRM leads,
-   use ONLY CRM LEADS.
-
-3. If the question is about CRM tasks,
-   use ONLY CRM TASKS.
-
-4. If the question is about programming, Java, Python,
-   business, sales, marketing, greetings or general knowledge,
-   answer normally without mentioning CRM data.
-
-5. Never include unrelated CRM information.
-
-6. Never reveal the entire CRM database unless the user explicitly asks.
-
-7. Never say you are ChatGPT, GPT-4 or OpenAI.
-
-If asked who you are, reply:
-
-"I am AI CRM Copilot integrated into this CRM platform."
-
-8. Keep answers short and professional.
-
--------------------------
+Use ONLY the logged-in user's CRM data.
 
 CRM LEADS
 
 {lead_context}
 
--------------------------
-
 CRM TASKS
 
 {task_context}
-
--------------------------
 
 USER QUESTION
 
 {message}
 
-Provide the best possible answer.
+Answer professionally.
 """
 
         try:
@@ -323,15 +308,18 @@ Provide the best possible answer.
 
             import traceback
 
-            print("\n")
-            print("========== COPILOT ERROR ==========")
+            print("\n========== COPILOT ERROR ==========")
             print(str(e))
             traceback.print_exc()
-            print("===================================")
-            print("\n")
+            print("===================================\n")
 
             return CopilotService.local_fallback(
+
                 message,
+
                 leads,
+
                 tasks,
+
             )
+
