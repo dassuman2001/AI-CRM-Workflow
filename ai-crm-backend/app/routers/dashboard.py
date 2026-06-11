@@ -31,6 +31,7 @@ def dashboard(
     return DashboardService.get_dashboard(
 
         db,
+        current_user.id,
 
     )
 
