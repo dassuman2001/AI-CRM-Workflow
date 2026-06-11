@@ -12,8 +12,8 @@ from app.schemas.note_schema import (
 )
 
 from app.services.current_user import get_current_user
-
 from app.services.note_service import NoteService
+
 
 router = APIRouter(
 
@@ -55,7 +55,13 @@ def list_notes(
 
 ):
 
-    return NoteService.list_notes(db)
+    return NoteService.list_notes(
+
+        db,
+
+        current_user.id,
+
+    )
 
 
 @router.get("/{note_id}")
@@ -74,6 +80,8 @@ def get_note(
         db,
 
         note_id,
+
+        current_user.id,
 
     )
 
@@ -111,6 +119,8 @@ def update_note(
 
         payload,
 
+        current_user.id,
+
     )
 
     if note is None:
@@ -143,6 +153,8 @@ def delete_note(
 
         note_id,
 
+        current_user.id,
+
     )
 
     if not deleted:
@@ -157,6 +169,6 @@ def delete_note(
 
     return {
 
-        "message": "Note deleted successfully"
+        "message": "Note deleted successfully",
 
     }

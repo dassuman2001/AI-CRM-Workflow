@@ -20,30 +20,61 @@ class TaskRepository:
         return task
 
     @staticmethod
-    def get_all(db: Session):
+    def get_all(
+        db: Session,
+        user_id: int,
+    ):
 
         return (
+
             db.query(Task)
-            .order_by(Task.id.desc())
+
+            .filter(
+                Task.user_id == user_id
+            )
+
+            .order_by(
+                Task.id.desc()
+            )
+
             .all()
+
         )
 
     @staticmethod
     def get_by_id(
+
         db: Session,
+
         task_id: int,
+
+        user_id: int,
+
     ):
 
         return (
+
             db.query(Task)
-            .filter(Task.id == task_id)
+
+            .filter(
+
+                Task.id == task_id,
+
+                Task.user_id == user_id,
+
+            )
+
             .first()
+
         )
 
     @staticmethod
     def update(
+
         db: Session,
+
         task: Task,
+
     ):
 
         db.commit()
@@ -54,8 +85,11 @@ class TaskRepository:
 
     @staticmethod
     def delete(
+
         db: Session,
+
         task: Task,
+
     ):
 
         db.delete(task)

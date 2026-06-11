@@ -20,24 +20,48 @@ class CompanyRepository:
         return company
 
     @staticmethod
-    def get_all(db: Session):
+    def get_all(
+        db: Session,
+        user_id: int,
+    ):
 
         return (
+
             db.query(Company)
-            .order_by(Company.id.desc())
+
+            .filter(
+                Company.user_id == user_id
+            )
+
+            .order_by(
+                Company.id.desc()
+            )
+
             .all()
+
         )
 
     @staticmethod
     def get_by_id(
         db: Session,
         company_id: int,
+        user_id: int,
     ):
 
         return (
+
             db.query(Company)
-            .filter(Company.id == company_id)
+
+            .filter(
+
+                Company.id == company_id,
+
+                Company.user_id == user_id,
+
+            )
+
             .first()
+
         )
 
     @staticmethod

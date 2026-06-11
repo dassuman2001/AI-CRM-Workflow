@@ -35,19 +35,27 @@ class NoteService:
         )
 
     @staticmethod
-    def list_notes(db: Session):
+    def list_notes(
+        db: Session,
+        user_id: int,
+    ):
 
-        return NoteRepository.get_all(db)
+        return NoteRepository.get_all(
+            db,
+            user_id,
+        )
 
     @staticmethod
     def get_note(
         db: Session,
         note_id: int,
+        user_id: int,
     ):
 
         return NoteRepository.get_by_id(
             db,
             note_id,
+            user_id,
         )
 
     @staticmethod
@@ -55,11 +63,13 @@ class NoteService:
         db: Session,
         note_id: int,
         payload: NoteUpdate,
+        user_id: int,
     ):
 
         note = NoteRepository.get_by_id(
             db,
             note_id,
+            user_id,
         )
 
         if note is None:
@@ -85,11 +95,13 @@ class NoteService:
     def delete_note(
         db: Session,
         note_id: int,
+        user_id: int,
     ):
 
         note = NoteRepository.get_by_id(
             db,
             note_id,
+            user_id,
         )
 
         if note is None:

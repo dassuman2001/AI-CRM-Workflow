@@ -12,8 +12,8 @@ from app.schemas.task_schema import (
 )
 
 from app.services.current_user import get_current_user
-
 from app.services.task_service import TaskService
+
 
 router = APIRouter(
 
@@ -55,7 +55,13 @@ def list_tasks(
 
 ):
 
-    return TaskService.list_tasks(db)
+    return TaskService.list_tasks(
+
+        db,
+
+        current_user.id,
+
+    )
 
 
 @router.get("/{task_id}")
@@ -74,6 +80,8 @@ def get_task(
         db,
 
         task_id,
+
+        current_user.id,
 
     )
 
@@ -111,6 +119,8 @@ def update_task(
 
         payload,
 
+        current_user.id,
+
     )
 
     if task is None:
@@ -143,6 +153,8 @@ def delete_task(
 
         task_id,
 
+        current_user.id,
+
     )
 
     if not deleted:
@@ -157,6 +169,7 @@ def delete_task(
 
     return {
 
-        "message": "Task deleted successfully"
+        "message": "Task deleted successfully",
 
     }
+

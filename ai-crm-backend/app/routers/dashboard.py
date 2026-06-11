@@ -44,8 +44,10 @@ def analytics(
 
 ):
 
-    return DashboardService.get_analytics(
+    return DashboardService.get_dashboard(
 
-        db
+    db,
 
-    )
+    current_user.id,
+
+)

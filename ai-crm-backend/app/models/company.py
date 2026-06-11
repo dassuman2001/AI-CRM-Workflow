@@ -9,11 +9,18 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 
 from app.database.database import Base
+from sqlalchemy import ForeignKey
 
 
 class Company(Base):
 
     __tablename__ = "companies"
+
+
+    user_id: Mapped[int] = mapped_column(
+    ForeignKey("users.id"),
+    nullable=False,
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,

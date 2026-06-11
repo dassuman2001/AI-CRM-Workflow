@@ -20,30 +20,61 @@ class NoteRepository:
         return note
 
     @staticmethod
-    def get_all(db: Session):
+    def get_all(
+        db: Session,
+        user_id: int,
+    ):
 
         return (
+
             db.query(Note)
-            .order_by(Note.id.desc())
+
+            .filter(
+                Note.user_id == user_id
+            )
+
+            .order_by(
+                Note.id.desc()
+            )
+
             .all()
+
         )
 
     @staticmethod
     def get_by_id(
+
         db: Session,
+
         note_id: int,
+
+        user_id: int,
+
     ):
 
         return (
+
             db.query(Note)
-            .filter(Note.id == note_id)
+
+            .filter(
+
+                Note.id == note_id,
+
+                Note.user_id == user_id,
+
+            )
+
             .first()
+
         )
 
     @staticmethod
     def update(
+
         db: Session,
+
         note: Note,
+
     ):
 
         db.commit()
@@ -54,8 +85,11 @@ class NoteRepository:
 
     @staticmethod
     def delete(
+
         db: Session,
+
         note: Note,
+
     ):
 
         db.delete(note)

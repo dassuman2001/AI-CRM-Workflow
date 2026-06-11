@@ -20,16 +20,21 @@ class LeadRepository:
     def get_by_id(
         db: Session,
         lead_id: int,
+        user_id: int,
     ):
         return (
             db.query(Lead)
-            .filter(Lead.id == lead_id)
+            .filter(
+                Lead.id == lead_id,
+                Lead.assigned_user_id == user_id,
+            )
             .first()
         )
 
     @staticmethod
     def get_all(
         db: Session,
+        user_id: int,
         page: int,
         limit: int,
         search: str | None,
@@ -38,7 +43,10 @@ class LeadRepository:
         sort: str,
         order: str,
     ):
-        query = db.query(Lead)
+
+        query = db.query(Lead).filter(
+            Lead.assigned_user_id == user_id
+        )
 
         if search:
             query = query.filter(
@@ -50,19 +58,32 @@ class LeadRepository:
             )
 
         if priority:
-            query = query.filter(Lead.priority == priority)
+            query = query.filter(
+                Lead.priority == priority
+            )
 
         if status:
-            query = query.filter(Lead.status == status)
+            query = query.filter(
+                Lead.status == status
+            )
 
-        sort_column = getattr(Lead, sort, Lead.id)
+        sort_column = getattr(
+            Lead,
+            sort,
+            Lead.id,
+        )
 
         if order.lower() == "desc":
-            query = query.order_by(sort_column.desc())
+            query = query.order_by(
+                sort_column.desc()
+            )
         else:
-            query = query.order_by(sort_column.asc())
+            query = query.order_by(
+                sort_column.asc()
+            )
 
         total = query.count()
+
         items = (
             query.offset((page - 1) * limit)
             .limit(limit)
@@ -88,11 +109,10 @@ class LeadRepository:
         db.delete(lead)
         db.commit()
 
-
     @staticmethod
     def save_ai_analysis(
-        db,
-        lead,
+        db: Session,
+        lead: Lead,
         ai_summary,
         ai_score,
         next_action,
@@ -100,15 +120,11 @@ class LeadRepository:
     ):
 
         lead.ai_summary = ai_summary
-
         lead.ai_score = ai_score
-
         lead.next_action = next_action
-
         lead.followup_email = followup_email
 
         db.commit()
-
         db.refresh(lead)
 
         return lead

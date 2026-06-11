@@ -12,8 +12,8 @@ from app.schemas.company_schema import (
 )
 
 from app.services.company_service import CompanyService
-
 from app.services.current_user import get_current_user
+
 
 router = APIRouter(
 
@@ -25,7 +25,6 @@ router = APIRouter(
 
 
 @router.post("")
-
 def create_company(
 
     payload: CompanyCreate,
@@ -42,11 +41,12 @@ def create_company(
 
         payload,
 
+        current_user.id,
+
     )
 
 
 @router.get("")
-
 def list_companies(
 
     db: Session = Depends(get_db),
@@ -55,11 +55,16 @@ def list_companies(
 
 ):
 
-    return CompanyService.list_companies(db)
+    return CompanyService.list_companies(
+
+        db,
+
+        current_user.id,
+
+    )
 
 
 @router.get("/{company_id}")
-
 def get_company(
 
     company_id: int,
@@ -75,6 +80,8 @@ def get_company(
         db,
 
         company_id,
+
+        current_user.id,
 
     )
 
@@ -92,7 +99,6 @@ def get_company(
 
 
 @router.put("/{company_id}")
-
 def update_company(
 
     company_id: int,
@@ -113,6 +119,8 @@ def update_company(
 
         payload,
 
+        current_user.id,
+
     )
 
     if company is None:
@@ -129,7 +137,6 @@ def update_company(
 
 
 @router.delete("/{company_id}")
-
 def delete_company(
 
     company_id: int,
@@ -145,6 +152,8 @@ def delete_company(
         db,
 
         company_id,
+
+        current_user.id,
 
     )
 
@@ -163,3 +172,4 @@ def delete_company(
         "message": "Company deleted successfully"
 
     }
+

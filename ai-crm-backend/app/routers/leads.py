@@ -1,20 +1,15 @@
 from fastapi import APIRouter
 from fastapi import Depends
+from fastapi import HTTPException
 from fastapi import Query
 
 from sqlalchemy.orm import Session
 
 from app.database.dependencies import get_db
-
 from app.schemas.lead_schema import LeadCreate
-
-from app.services.current_user import get_current_user
-
-from app.services.lead_service import LeadService
-
-from fastapi import HTTPException
-
 from app.schemas.lead_schema import LeadUpdate
+from app.services.current_user import get_current_user
+from app.services.lead_service import LeadService
 
 
 router = APIRouter(
@@ -27,7 +22,6 @@ router = APIRouter(
 
 
 @router.post("")
-
 def create_lead(
 
     payload: LeadCreate,
@@ -50,25 +44,17 @@ def create_lead(
 
 
 @router.get("")
-
 def list_leads(
 
     page: int = Query(
-
         1,
-
         ge=1,
-
     ),
 
     limit: int = Query(
-
         10,
-
         ge=1,
-
         le=100,
-
     ),
 
     search: str | None = None,
@@ -91,6 +77,8 @@ def list_leads(
 
         db,
 
+        current_user.id,
+
         page,
 
         limit,
@@ -107,23 +95,36 @@ def list_leads(
 
     )
 
+
 @router.get("/{lead_id}")
 def get_lead(
+
     lead_id: int,
+
     db: Session = Depends(get_db),
+
     current_user=Depends(get_current_user),
+
 ):
 
     lead = LeadService.get_lead(
+
         db,
+
         lead_id,
+
+        current_user.id,
+
     )
 
     if lead is None:
 
         raise HTTPException(
+
             status_code=404,
+
             detail="Lead not found",
+
         )
 
     return lead
@@ -131,23 +132,37 @@ def get_lead(
 
 @router.put("/{lead_id}")
 def update_lead(
+
     lead_id: int,
+
     payload: LeadUpdate,
+
     db: Session = Depends(get_db),
+
     current_user=Depends(get_current_user),
+
 ):
 
     lead = LeadService.update_lead(
+
         db,
+
         lead_id,
+
         payload,
+
+        current_user.id,
+
     )
 
     if lead is None:
 
         raise HTTPException(
+
             status_code=404,
+
             detail="Lead not found",
+
         )
 
     return lead
@@ -155,25 +170,39 @@ def update_lead(
 
 @router.delete("/{lead_id}")
 def delete_lead(
+
     lead_id: int,
+
     db: Session = Depends(get_db),
+
     current_user=Depends(get_current_user),
+
 ):
 
     deleted = LeadService.delete_lead(
+
         db,
+
         lead_id,
+
+        current_user.id,
+
     )
 
     if not deleted:
 
         raise HTTPException(
+
             status_code=404,
+
             detail="Lead not found",
+
         )
 
     return {
-        "message": "Lead deleted successfully"
+
+        "message": "Lead deleted successfully",
+
     }
 
 
@@ -193,6 +222,8 @@ def analyze_lead(
         db,
 
         lead_id,
+
+        current_user.id,
 
     )
 

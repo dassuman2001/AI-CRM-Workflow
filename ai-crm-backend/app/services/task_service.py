@@ -39,19 +39,27 @@ class TaskService:
         )
 
     @staticmethod
-    def list_tasks(db: Session):
+    def list_tasks(
+        db: Session,
+        user_id: int,
+    ):
 
-        return TaskRepository.get_all(db)
+        return TaskRepository.get_all(
+            db,
+            user_id,
+        )
 
     @staticmethod
     def get_task(
         db: Session,
         task_id: int,
+        user_id: int,
     ):
 
         return TaskRepository.get_by_id(
             db,
             task_id,
+            user_id,
         )
 
     @staticmethod
@@ -59,22 +67,27 @@ class TaskService:
         db: Session,
         task_id: int,
         payload: TaskUpdate,
+        user_id: int,
     ):
 
         task = TaskRepository.get_by_id(
             db,
             task_id,
+            user_id,
         )
 
         if task is None:
-
             return None
 
         for key, value in payload.model_dump(
             exclude_unset=True
         ).items():
 
-            setattr(task, key, value)
+            setattr(
+                task,
+                key,
+                value,
+            )
 
         return TaskRepository.update(
             db,
@@ -85,15 +98,16 @@ class TaskService:
     def delete_task(
         db: Session,
         task_id: int,
+        user_id: int,
     ):
 
         task = TaskRepository.get_by_id(
             db,
             task_id,
+            user_id,
         )
 
         if task is None:
-
             return False
 
         TaskRepository.delete(
