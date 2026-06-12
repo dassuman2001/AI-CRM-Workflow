@@ -5,15 +5,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.database.init_db import create_tables, run_migrations
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Run DB setup (create_all + column migrations) on every startup."""
-    create_tables()
-    run_migrations()
-    yield
-
 from app.routers.auth import router as auth_router
 from app.routers.leads import router as lead_router
 from app.routers.company import router as company_router
@@ -23,6 +14,14 @@ from app.routers.ai import router as ai_router
 from app.routers.dashboard import router as dashboard_router
 from app.routers.copilot import router as copilot_router
 from app.routers.export_routes import router as export_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run DB setup (create_all + column migrations) on every startup."""
+    create_tables()
+    run_migrations()
+    yield
 
 
 app = FastAPI(
@@ -47,41 +46,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
-
 def home():
-
-    return {
-
-        "message": "AI CRM Backend Running"
-
-    }
+    return {"message": "AI CRM Backend Running"}
 
 
 @app.get("/health")
-
 def health():
+    return {"status": "healthy"}
 
-    return {
-
-        "status": "healthy"
-
-    }
 
 app.include_router(lead_router)
-
 app.include_router(auth_router)
-
 app.include_router(company_router)
-
 app.include_router(task_router)
-
 app.include_router(note_router)
-
 app.include_router(ai_router)
-
-app.include_router(dashboard_router)    
-
+app.include_router(dashboard_router)
 app.include_router(copilot_router)
-
-app.include_router( export_router)
+app.include_router(export_router)

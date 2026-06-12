@@ -20,9 +20,16 @@ def run_migrations():
     SQLAlchemy's create_all() only creates new tables — it never modifies
     existing ones. This function detects and adds any missing columns.
     """
-    inspector = inspect(engine)
-
     with engine.connect() as conn:
+
+        # Re-create inspector inside the connection so it reflects the
+        # latest schema (including tables just created by create_all).
+        inspector = inspect(engine)
+
+        # Guard: skip if companies table doesn't exist yet
+        if "companies" not in inspector.get_table_names():
+            print("  [migrate] 'companies' table not found — skipping.")
+            return
 
         # --- companies: add user_id if missing ---
         companies_cols = [
