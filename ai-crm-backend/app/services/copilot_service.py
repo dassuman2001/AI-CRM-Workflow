@@ -229,52 +229,31 @@ Try asking a CRM-related question.
             .all()
         )
 
-        all_leads_context = ""
-
-        for lead in leads:
-
-            all_leads_context += f"""
+        if leads:
+            lead_context = ""
+            for lead in leads:
+                lead_context += f"""
 Lead Name: {lead.name}
-Company: {lead.company}
+Company: {lead.company or 'N/A'}
 Priority: {lead.priority}
 Status: {lead.status}
-AI Score: {lead.ai_score}
-Estimated Value: {lead.estimated_value}
-Next Action: {lead.next_action}
-
+AI Score: {lead.ai_score or 'N/A'}
+Estimated Value: ${lead.estimated_value or 0}
+Next Action: {lead.next_action or 'None'}
 """
+        else:
+            lead_context = "No leads found. The user has 0 leads in the system."
 
-        all_tasks_context = ""
-
-        for task in tasks:
-
-            all_tasks_context += f"""
+        if tasks:
+            task_context = ""
+            for task in tasks:
+                task_context += f"""
 Task: {task.title}
 Completed: {task.completed}
-Description: {task.description}
-
+Description: {task.description or 'None'}
 """
-
-        msg = message.lower()
-
-        lead_context = ""
-
-        task_context = ""
-
-        if (
-            "lead" in msg
-            or "pipeline" in msg
-            or "priority" in msg
-        ):
-
-            lead_context = all_leads_context
-
-        if (
-            "task" in msg
-            or "pending" in msg
-        ):
-
-            task_context = all_tasks_context
+        else:
+            task_context = "No tasks found. The user has 0 tasks."
 
         prompt = f"""
 You are AI CRM Copilot.
