@@ -19,12 +19,19 @@ from app.routers.export_routes import router as export_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Run DB setup (create_all + column migrations) on every startup."""
-    try:
-        create_tables()
-        run_migrations()
-    except Exception as e:
-        print(f"[startup] WARNING: DB init failed — {e}")
-        print("[startup] App will still start; DB will connect on first request.")
+    import time
+    for attempt in range(1, 4):
+        try:
+            create_tables()
+            run_migrations()
+            print("[startup] DB init successful.")
+            break
+        except Exception as e:
+            print(f"[startup] DB init attempt {attempt}/3 failed — {e}")
+            if attempt < 3:
+                time.sleep(3)
+            else:
+                print("[startup] All retries failed. App will start; DB will connect on first request.")
     yield
 
 

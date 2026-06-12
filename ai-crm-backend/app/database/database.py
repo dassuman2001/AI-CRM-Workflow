@@ -14,22 +14,21 @@ DATABASE_URL = (
     f"{settings.MYSQL_HOST}:"
     f"{settings.MYSQL_PORT}/"
     f"{settings.MYSQL_DB}"
-    "?ssl_verify_cert=false"
 )
 
 
 engine = create_engine(
-
     DATABASE_URL,
-
+    connect_args={
+        "ssl": {
+            "ssl_mode": "REQUIRED",
+        }
+    },
     pool_pre_ping=True,
-
     pool_recycle=300,
-
     pool_size=10,
-
     max_overflow=20,
-
+    pool_timeout=30,
 )
 
 
