@@ -1,7 +1,18 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.database.init_db import create_tables, run_migrations
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Run DB setup (create_all + column migrations) on every startup."""
+    create_tables()
+    run_migrations()
+    yield
 
 from app.routers.auth import router as auth_router
 from app.routers.leads import router as lead_router
@@ -15,11 +26,9 @@ from app.routers.export_routes import router as export_router
 
 
 app = FastAPI(
-
     title=settings.PROJECT_NAME,
-
     version=settings.PROJECT_VERSION,
-
+    lifespan=lifespan,
 )
 
 app.add_middleware(
